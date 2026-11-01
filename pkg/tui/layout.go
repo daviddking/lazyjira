@@ -1,8 +1,8 @@
 package tui
 
-// isVerticalLayout returns true when terminal is too narrow for side-by-side.
+// isVerticalLayout stacks panels when requested or when the terminal is narrow.
 func (a *App) isVerticalLayout() bool {
-	return a.width < 80
+	return a.width < 80 || (a.cfg != nil && a.cfg.GUI.StackedLayout)
 }
 
 // sideWidth calculates the left panel width, shrinking for narrow terminals.
@@ -51,40 +51,62 @@ func (a *App) layoutPanels() {
 
 		avail := totalH - statusH - logH // space for detail + issues + info + projects
 
-		switch {
-		case a.side == sideRight:
-			// Detail focused: all left panels collapsed.
-			detailH = avail - issuesH - infoH - projectsH
+		if a.cfg.GUI.StackedLayout {
+			// Keep the list and body visible with a stable split when focus moves
+			// between them. Double the list allocation while keeping the body visible.
+			logH = 3
+			if a.side == sideLeft {
+				switch a.leftFocus {
+				case focusStatus:
+					statusH = 3
+				case focusInfo:
+					infoH = min(infoCap, max(3, totalH/4))
+				case focusProjects:
+					projectsH = min(projectsCap, max(3, totalH/4))
+				case focusIssues:
+					// Keep the auxiliary panels collapsed while browsing issues.
+				}
+			}
+			remaining := totalH - statusH - infoH - projectsH - logH
+			issuesH = min(20, max(6, 2*(remaining/3)))
+			issuesH = min(issuesH, max(3, remaining-3))
+			detailH = remaining - issuesH
+		} else {
+			switch {
+			case a.side == sideRight:
+				// Detail focused: all left panels collapsed.
+				detailH = avail - issuesH - infoH - projectsH
 
-		case a.leftFocus == focusIssues:
-			// Issues focused: others collapsed.
-			remaining := avail - infoH - projectsH
-			detailH = min(detailTarget, max(remaining-1, 1))
-			issuesH = remaining - detailH
+			case a.leftFocus == focusIssues:
+				// Issues focused: others collapsed.
+				remaining := avail - infoH - projectsH
+				detailH = min(detailTarget, max(remaining-1, 1))
+				issuesH = remaining - detailH
 
-		case a.leftFocus == focusInfo:
-			// Info focused: others collapsed.
-			remaining := avail - issuesH - projectsH
-			detailH = min(detailTarget, max(remaining-1, 1))
-			infoH = min(remaining-detailH, infoCap)
-			detailH = remaining - infoH
+			case a.leftFocus == focusInfo:
+				// Info focused: others collapsed.
+				remaining := avail - issuesH - projectsH
+				detailH = min(detailTarget, max(remaining-1, 1))
+				infoH = min(remaining-detailH, infoCap)
+				detailH = remaining - infoH
 
-		case a.leftFocus == focusProjects:
-			// Projects focused: others collapsed.
-			remaining := avail - issuesH - infoH
-			detailH = min(detailTarget, max(remaining-1, 1))
-			projectsH = min(remaining-detailH, projectsCap)
-			detailH = remaining - projectsH
+			case a.leftFocus == focusProjects:
+				// Projects focused: others collapsed.
+				remaining := avail - issuesH - infoH
+				detailH = min(detailTarget, max(remaining-1, 1))
+				projectsH = min(remaining-detailH, projectsCap)
+				detailH = remaining - projectsH
 
-		case a.leftFocus == focusStatus:
-			statusH = 3
-			avail -= 2 // status took 2 extra
-			remaining := avail - infoH - projectsH
-			detailH = min(detailTarget, max(remaining-1, 1))
-			issuesH = remaining - detailH
+			case a.leftFocus == focusStatus:
+				statusH = 3
+				avail -= 2 // status took 2 extra
+				remaining := avail - infoH - projectsH
+				detailH = min(detailTarget, max(remaining-1, 1))
+				issuesH = remaining - detailH
 
-		default:
-			detailH = avail - issuesH - infoH - projectsH
+			default:
+				detailH = avail - issuesH - infoH - projectsH
+			}
 		}
 
 		if issuesH < 1 {

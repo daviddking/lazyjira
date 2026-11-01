@@ -49,6 +49,21 @@ func makeDetailIssue() *jira.Issue {
 	}
 }
 
+func TestDetailView_FullSummaryWrapsAboveDescription(t *testing.T) {
+	t.Parallel()
+	detail := makeFocusedDetail()
+	detail.SetSize(40, 24)
+	issue := makeDetailIssue()
+	issue.Summary = "A long issue summary that wraps across several lines with a distinctive ending"
+	detail.SetIssue(issue)
+	view := detail.View()
+	ending := strings.Index(view, "distinctive ending")
+	description := strings.Index(view, issue.Description)
+	if ending < 0 || description < 0 || ending >= description {
+		t.Fatalf("full summary should appear above description:\n%s", view)
+	}
+}
+
 func TestDetailView_NewDetailView_SetsDefaults(t *testing.T) {
 	t.Parallel()
 	detail := NewDetailView(BuiltinRenderer{})

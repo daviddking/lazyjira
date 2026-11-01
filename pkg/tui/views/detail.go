@@ -484,7 +484,13 @@ func (d *DetailView) View() string {
 	} else {
 		switch d.activeTab {
 		case TabDetails:
-			contentLines = d.renderDescription(contentWidth)
+			if d.issue.Summary != "" {
+				for _, line := range wrapText(d.issue.Summary, max(contentWidth-2, 1)) {
+					contentLines = append(contentLines, " "+d.theme.ValueStyle.Bold(true).Render(line))
+				}
+				contentLines = append(contentLines, "")
+			}
+			contentLines = append(contentLines, d.renderDescription(contentWidth)...)
 		default:
 			contentLines = []string{" No content."}
 		}

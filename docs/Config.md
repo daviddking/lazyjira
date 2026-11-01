@@ -188,6 +188,8 @@ gui:
 
 `sidePanelWidth` controls the left panel width in columns. It automatically shrinks on narrow terminals.
 
+`stackedLayout: true` stacks panels at any terminal width. The issue list and detail pane keep stable heights when focus moves between them. The list uses up to 20 lines, and the log uses 3 lines. The default is `false`, preserving the automatic narrow-terminal layout.
+
 `collapsedPanelHeight` sets the height of non-focused left panels in lines (default 5, minimum 3).
 
 `theme` selects the color palette. Supported values: `default` (ANSI 16, original look), `auto`, [Catppuccin](https://github.com/catppuccin/catppuccin) presets (`catppuccin-latte`, `catppuccin-frappe`, `catppuccin-macchiato`, `catppuccin-mocha`). Omitting the `theme` key or setting it to `""` keeps the legacy `default` ANSI 16 palette for backward compatibility. Use `theme: auto` to opt into runtime detection: lazyjira inspects your terminal background and picks `catppuccin-mocha` (dark) or `catppuccin-latte` (light). An unknown theme name is an error. Hex-based themes require a terminal with truecolor support.

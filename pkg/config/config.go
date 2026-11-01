@@ -240,6 +240,7 @@ type GUIConfig struct {
 	ThemeLight           map[string]string `yaml:"themeLight,omitempty"`
 	Language             string            `yaml:"language"` // TODO not yet wired up
 	SidePanelWidth       int               `yaml:"sidePanelWidth"`
+	StackedLayout        bool              `yaml:"stackedLayout"`
 	CollapsedPanelHeight int               `yaml:"collapsedPanelHeight"`
 	ShowIcons            bool              `yaml:"showIcons"`  // TODO not yet wired up
 	DateFormat           string            `yaml:"dateFormat"` // TODO not yet wired up
