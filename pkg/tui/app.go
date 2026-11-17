@@ -261,6 +261,7 @@ func NewAppWithAuth(cfg *config.Config, client jira.ClientInterface, authMethod 
 
 	statusPanel := views.NewStatusPanel(projectKey, cfg.Jira.Email, cfg.Jira.Host)
 	issuesList := views.NewIssuesList()
+	issuesList.SetJiraHost(cfg.Jira.Host)
 	if len(cfg.GUI.IssueListFields) > 0 {
 		issuesList.SetFields(cfg.GUI.IssueListFields)
 	}

@@ -2,6 +2,7 @@ package views
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 	"time"
 
@@ -35,6 +36,7 @@ type IssuesList struct {
 	tab              int
 	tabCache         map[int][]jira.Issue
 	userEmail        string
+	jiraHost         string
 	keyColWidth      int
 	fields           []string
 	theme            *theme.Theme
@@ -53,6 +55,23 @@ type IssuesList struct {
 
 func NewIssuesList() *IssuesList {
 	return &IssuesList{theme: theme.Default, jqlTabIdx: -1, hierarchyTabIdx: -1}
+}
+
+func (m *IssuesList) SetJiraHost(host string) {
+	m.jiraHost = ""
+	host = strings.TrimSpace(host)
+	if host == "" {
+		return
+	}
+	if !strings.Contains(host, "://") {
+		host = "https://" + host
+	}
+	u, err := url.Parse(host)
+	if err != nil || u.Host == "" || (u.Scheme != "https" && u.Scheme != "http") {
+		return
+	}
+	u.RawQuery, u.Fragment = "", ""
+	m.jiraHost = strings.TrimRight(u.String(), "/")
 }
 
 func (m *IssuesList) SetFields(fields []string) { m.fields = fields }
@@ -642,7 +661,12 @@ func (m *IssuesList) renderIssueRow(issue jira.Issue, width int, selected bool) 
 	for _, f := range fields {
 		switch f {
 		case "key":
-			parts = append(parts, padRight(issue.Key, m.keyColWidth))
+			key := m.issueKeyLink(issue.Key)
+			key = padRight(key, m.keyColWidth)
+			if !selected || !m.Focused {
+				key = lipgloss.NewStyle().Foreground(theme.ColorCyan).Render(key)
+			}
+			parts = append(parts, key)
 		case "summary":
 			parts = append(parts, padRight(components.TruncateEnd(issue.Summary, summaryWidth), summaryWidth))
 		case fieldStatus:
@@ -694,6 +718,14 @@ func (m *IssuesList) renderIssueRow(issue jira.Issue, width int, selected bool) 
 		return m.theme.SelectedItem.Width(width).Render(line)
 	}
 	return m.theme.NormalItem.Width(width).Render(line)
+}
+
+// Only the ID is clickable; padding and the rest of the row are outside the link.
+func (m *IssuesList) issueKeyLink(key string) string {
+	if m.jiraHost == "" || key == "" {
+		return key
+	}
+	return ansi.SetHyperlink(m.jiraHost+"/browse/"+url.PathEscape(key)) + key + ansi.ResetHyperlink()
 }
 
 // padRight pads s with spaces to width w using visible ANSI-aware width
