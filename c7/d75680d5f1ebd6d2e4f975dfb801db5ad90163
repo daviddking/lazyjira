@@ -1,0 +1,19 @@
+pkg/tui/views/issues_hyperlink_test.go
+  s_5b493f45249559::t_2f355e7722a394 1-68
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "development:1.7.7",
+  "base_commit_sha": "c7d75680d5f1ebd6d2e4f975dfb801db5ad90163",
+  "prompts": {},
+  "sessions": {
+    "s_5b493f45249559": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1ea49-8937-7cb0-a450-bafc47886bfb",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "David King <daviddking@gmail.com>"
+    }
+  }
+}
